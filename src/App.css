@@ -119,7 +119,7 @@ main {
 
 .categories {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 9px;
   margin-bottom: 28px;
 }
@@ -242,7 +242,7 @@ main {
   background: white;
   border-top: 1px solid #e5e7ea;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   z-index: 10;
 }
 
@@ -375,6 +375,7 @@ main {
   padding: 0 13px;
   font-size: 14px;
   background: white;
+color: #17191c;
   outline: none;
 }
 
@@ -750,4 +751,27 @@ main {
   font-size: 12px;
   line-height: 1.5;
   margin: 14px 8px 30px;
+}
+
+
+/* SIPGO: make all checkout/search text inputs clearly visible */
+.checkoutInput,
+.checkoutCard input,
+.locationPickerCard input {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+  caret-color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+}
+
+.checkoutInput::placeholder,
+.checkoutCard input::placeholder,
+.locationPickerCard input::placeholder {
+  color: #6b7280 !important;
+  opacity: 1 !important;
+}
+
+.locationChangeButton {
+  color: #ffffff !important;
+  background: #ff5a1f !important;
 }

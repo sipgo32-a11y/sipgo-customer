@@ -663,11 +663,48 @@ function App() {
       return
     }
 
-    setLocationMessage('Getting your location...')
+    // Use the last successful location immediately.
+    // Fresh GPS will update it in the background.
+    try {
+      const cached = localStorage.getItem('sipgo_customer_location')
 
+      if (cached) {
+        const saved = JSON.parse(cached)
+
+        if (
+          Number.isFinite(Number(saved.latitude)) &&
+          Number.isFinite(Number(saved.longitude))
+        ) {
+          const cachedLocation = {
+            latitude: Number(saved.latitude),
+            longitude: Number(saved.longitude)
+          }
+
+          setCustomerLocation(cachedLocation)
+          setDeliveryLocation(cachedLocation)
+          setDeliveryLocationConfirmed(true)
+          setLocationConfirmRequired(false)
+
+          if (saved.placeName) {
+            setCurrentPlaceName(saved.placeName)
+          }
+
+          if (saved.address) {
+            setCurrentPlaceAddress(saved.address)
+          }
+
+          setLocationMessage('Location ready ✓')
+        }
+      }
+    } catch (error) {
+      console.warn('Cached location unavailable:', error)
+    }
+
+    // Get a fresh location in the background.
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords
+
         const detectedLocation = {
           latitude,
           longitude
@@ -677,20 +714,46 @@ function App() {
         setDeliveryLocation(detectedLocation)
         setDeliveryLocationConfirmed(true)
         setLocationConfirmRequired(false)
-        setLocationMessage('Location detected ✅')
+        setLocationMessage('Location updated ✓')
+
+        try {
+          localStorage.setItem(
+            'sipgo_customer_location',
+            JSON.stringify({
+              latitude,
+              longitude,
+              savedAt: Date.now()
+            })
+          )
+        } catch (error) {
+          console.warn('Could not cache location:', error)
+        }
+
         reverseGeocodeLocation(latitude, longitude)
       },
       (error) => {
-        console.error('Customer location error:', error)
-        setLocationMessage('Please allow location access to see nearby shops.')
+        console.warn('Customer location refresh failed:', error)
+
+        // If cached location exists, keep using it.
+        const cached = localStorage.getItem('sipgo_customer_location')
+
+        if (!cached) {
+          setLocationMessage(
+            'Please allow location access to see nearby shops.'
+          )
+        }
       },
       {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 60000
+        enableHighAccuracy: false,
+        timeout: 6000,
+        maximumAge: 300000
       }
     )
   }
+
+  useEffect(() => {
+    getCustomerLocation()
+  }, [])
 
   useEffect(() => {
     const loadApprovedShops = async () => {
@@ -713,65 +776,85 @@ function App() {
         return
       }
 
-      const mappedShops = await Promise.all(
-        (data || []).map(async (shop) => {
-          const shopLatitude = Number(shop.latitude)
-          const shopLongitude = Number(shop.longitude)
+      // First find only shops inside the 6 km service area.
+      const nearbyShops = (data || []).map((shop) => {
+        const shopLatitude = Number(shop.latitude)
+        const shopLongitude = Number(shop.longitude)
 
-          if (!Number.isFinite(shopLatitude) || !Number.isFinite(shopLongitude)) {
-            console.warn('Shop has no valid GPS coordinates:', shop.id)
-            return null
-          }
+        if (!Number.isFinite(shopLatitude) || !Number.isFinite(shopLongitude)) {
+          return null
+        }
 
-          const shopDistanceKm = calculateDistanceKm(
-            Number(shopSearchLocation.latitude),
-            Number(shopSearchLocation.longitude),
-            shopLatitude,
-            shopLongitude
-          )
+        const shopDistanceKm = calculateDistanceKm(
+          Number(shopSearchLocation.latitude),
+          Number(shopSearchLocation.longitude),
+          shopLatitude,
+          shopLongitude
+        )
 
-          // STRICT SERVICE AREA: 6.000 km maximum.
-          // Anything even 1 metre beyond 6 km is not serviceable.
-          if (!Number.isFinite(shopDistanceKm) || shopDistanceKm > 6.000) {
-            return null
-          }
+        if (!Number.isFinite(shopDistanceKm) || shopDistanceKm > 6.000) {
+          return null
+        }
 
-          const { data: products, error: productsError } = await supabase
-            .from('sipgo_products')
-            .select('*')
-            .eq('shop_id', shop.id)
-            .eq('active', true)
-            .gt('stock', 0)
-            .order('name', { ascending: true })
+        return {
+          ...shop,
+          distanceKm: Number(shopDistanceKm.toFixed(2))
+        }
+      }).filter(Boolean)
 
-          if (productsError) {
-            console.error('Failed to load products for shop:', shop.id, productsError)
-          }
+      if (nearbyShops.length === 0) {
+        setShops([])
+        return
+      }
 
-          return {
-            id: shop.id,
-            name: shop.shop_name,
-            location: shop.location,
-            openingTime: shop.opening_time,
-            closingTime: shop.closing_time,
-            isOpen: shop.is_open ?? true,
-            time: '20–30 min',
-            distanceKm: Number(shopDistanceKm.toFixed(2)),
-            photo: shop.shop_photo_url || '',
-            products: (products || []).map((product) => ({
-              id: product.id,
-              name: product.name,
-              category: product.category || '',
-              size: product.size || '',
-              price: Number(product.price || 0),
-              stock: Number(product.stock || 0),
-              icon: '🍾'
-            }))
-          }
+      // Load products for all nearby shops in ONE request instead of
+      // making one Supabase request for every shop.
+      const nearbyShopIds = nearbyShops.map((shop) => shop.id)
+
+      const { data: productsData, error: productsError } = await supabase
+        .from('sipgo_products')
+        .select('*')
+        .in('shop_id', nearbyShopIds)
+        .eq('active', true)
+        .gt('stock', 0)
+        .order('name', { ascending: true })
+
+      if (productsError) {
+        console.error('Failed to load nearby products:', productsError)
+      }
+
+      const productsByShop = {}
+
+      ;(productsData || []).forEach((product) => {
+        if (!productsByShop[product.shop_id]) {
+          productsByShop[product.shop_id] = []
+        }
+
+        productsByShop[product.shop_id].push({
+          id: product.id,
+          name: product.name,
+          category: product.category || '',
+          size: product.size || '',
+          price: Number(product.price || 0),
+          stock: Number(product.stock || 0),
+          icon: '🍾'
         })
-      )
+      })
 
-      setShops(mappedShops.filter(Boolean))
+      const mappedShops = nearbyShops.map((shop) => ({
+        id: shop.id,
+        name: shop.shop_name,
+        location: shop.location,
+        openingTime: shop.opening_time,
+        closingTime: shop.closing_time,
+        isOpen: shop.is_open ?? true,
+        time: '20–30 min',
+        distanceKm: shop.distanceKm,
+        photo: shop.shop_photo_url || '',
+        products: productsByShop[shop.id] || []
+      }))
+
+      setShops(mappedShops)
     }
 
     loadApprovedShops()
@@ -1028,6 +1111,7 @@ function App() {
   const [showOrders, setShowOrders] = useState(false)
   const [orders, setOrders] = useState([])
   const [ordersLoading, setOrdersLoading] = useState(false)
+  const [deliveryPartners, setDeliveryPartners] = useState({})
 
   const [shopName, setShopName] = useState('')
   const [shopLocation, setShopLocation] = useState('Doddaballapur')
@@ -1057,11 +1141,72 @@ function App() {
         return
       }
 
-      setOrders(data || [])
+      const orderList = data || []
+      setOrders(orderList)
+
+      const partnerEntries = await Promise.all(
+        orderList
+          .filter((order) => order.delivery_partner_id)
+          .map(async (order) => {
+            const { data: partnerData, error: partnerError } =
+              await supabase.rpc('get_customer_delivery_partner', {
+                p_order_id: order.id
+              })
+
+            if (partnerError) {
+              console.error('Failed to load delivery partner:', partnerError)
+              return [order.id, null]
+            }
+
+            return [order.id, partnerData?.[0] || null]
+          })
+      )
+
+      setDeliveryPartners(Object.fromEntries(partnerEntries))
     } finally {
       setOrdersLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (!showOrders || orders.length === 0) return
+
+    let cancelled = false
+
+    const refreshPartnerTracking = async () => {
+      const assignedOrders = orders.filter((order) => order.delivery_partner_id)
+
+      if (assignedOrders.length === 0) return
+
+      const partnerEntries = await Promise.all(
+        assignedOrders.map(async (order) => {
+          const { data: partnerData, error: partnerError } =
+            await supabase.rpc('get_customer_delivery_partner', {
+              p_order_id: order.id
+            })
+
+          if (partnerError) {
+            console.error('Partner tracking refresh failed:', partnerError)
+            return [order.id, null]
+          }
+
+          return [order.id, partnerData?.[0] || null]
+        })
+      )
+
+      if (!cancelled) {
+        setDeliveryPartners(Object.fromEntries(partnerEntries))
+      }
+    }
+
+    refreshPartnerTracking()
+    const timer = setInterval(refreshPartnerTracking, 10000)
+
+    return () => {
+      cancelled = true
+      clearInterval(timer)
+    }
+  }, [showOrders, orders])
 
   const handlePlaceOrder = async () => {
     setFormError('')
@@ -2699,6 +2844,82 @@ function App() {
                     <div className="orderDate">
                       {new Date(order.created_at).toLocaleString()}
                     </div>
+
+                    {order.delivery_partner_id && (
+                      <div style={{
+                        marginTop: '14px',
+                        padding: '14px',
+                        borderRadius: '14px',
+                        background: '#f7f7f7',
+                        border: '1px solid #e5e5e5'
+                      }}>
+                        <div style={{
+                          fontWeight: '800',
+                          fontSize: '15px',
+                          marginBottom: '10px'
+                        }}>
+                          🚚 Delivery Partner
+                        </div>
+
+                        {deliveryPartners[order.id] ? (
+                          <>
+                            <div style={{
+                              display: 'grid',
+                              gap: '7px',
+                              fontSize: '14px'
+                            }}>
+                              <div>
+                                👤 <strong>{deliveryPartners[order.id].partner_name || 'Delivery Partner'}</strong>
+                              </div>
+
+                              {deliveryPartners[order.id].partner_phone && (
+                                <div>
+                                  📞 <a
+                                    href={`tel:${deliveryPartners[order.id].partner_phone}`}
+                                    style={{ fontWeight: '700' }}
+                                  >
+                                    {deliveryPartners[order.id].partner_phone}
+                                  </a>
+                                </div>
+                              )}
+
+                              <div>
+                                📦 Status: <strong>{order.status}</strong>
+                              </div>
+
+                              <div>
+                                {deliveryPartners[order.id].is_online
+                                  ? '🟢 Partner is online'
+                                  : '⚪ Partner is offline'}
+                              </div>
+                            </div>
+
+                            {deliveryPartners[order.id].latitude != null &&
+                              deliveryPartners[order.id].longitude != null && (
+                                <button
+                                  type="button"
+                                  className="submitButton"
+                                  style={{ marginTop: '10px', width: '100%' }}
+                                  onClick={() => {
+                                    const lat = deliveryPartners[order.id].latitude
+                                    const lng = deliveryPartners[order.id].longitude
+                                    window.open(
+                                      `https://www.google.com/maps?q=${lat},${lng}`,
+                                      '_blank'
+                                    )
+                                  }}
+                                >
+                                  📍 Live Tracking
+                                </button>
+                              )}
+                          </>
+                        ) : (
+                          <div style={{ fontSize: '14px', color: '#666' }}>
+                            Finding your delivery partner...
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {['PENDING', 'CONFIRMED', 'ACCEPTED'].includes(order.status) && (
                       <button

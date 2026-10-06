@@ -377,7 +377,10 @@ function App() {
           name: name.trim(),
           dob,
           mobile: `+91${cleanMobile}`,
-          pan: cleanPan
+          pan: cleanPan,
+          account_status: 'PENDING',
+          age_verified: true,
+          pan_verified: false
         }
       }
     })
@@ -434,6 +437,13 @@ function App() {
     }
 
     setSession(data.session)
+
+    if (data.user?.user_metadata?.account_status === 'PENDING') {
+      setAuthMessage('Your SIPGO account is pending admin approval.')
+      setIsLoggedIn(false)
+      return
+    }
+
     setIsLoggedIn(true)
   }
 
@@ -712,6 +722,95 @@ function App() {
   const [paymentMethod, setPaymentMethod] = useState('UPI')
   const [deliveryTip, setDeliveryTip] = useState(0)
   const [showAddShop, setShowAddShop] = useState(false)
+  const [showSupport, setShowSupport] = useState(false)
+  const [showTerms, setShowTerms] = useState(false)
+  const [showProfileEdit, setShowProfileEdit] = useState(false)
+  const [showPanVerification, setShowPanVerification] = useState(false)
+  const [supportMessage, setSupportMessage] = useState('')
+  const [supportMessages, setSupportMessages] = useState([])
+
+  const handleProfileSave = async () => {
+    const cleanMobile = String(mobile || '').replace(/\\D/g, '').slice(-10)
+
+    if (!String(name || '').trim()) {
+      alert('Please enter your name')
+      return
+    }
+
+    if (cleanMobile.length !== 10) {
+      alert('Enter a valid 10-digit mobile number')
+      return
+    }
+
+    const { data, error } = await supabase.auth.updateUser({
+      data: {
+        name: String(name).trim(),
+        dob,
+        mobile: `+91${cleanMobile}`
+      }
+    })
+
+    if (error) {
+      alert(error.message)
+      return
+    }
+
+    if (data?.user) {
+      setSession(current => current ? { ...current, user: data.user } : current)
+    }
+
+    setShowProfileEdit(false)
+    alert('Profile updated successfully')
+  }
+
+  const getSupportReply = (message) => {
+    const q = String(message).toLowerCase()
+
+    if (q.includes('order') || q.includes('track')) {
+      return '📦 You can check your latest orders from My Orders. Open an order to see its current status.'
+    }
+
+    if (q.includes('payment') || q.includes('upi')) {
+      return '💳 SIPGO currently supports UPI payments. If your payment failed, please try again after checking your UPI app.'
+    }
+
+    if (q.includes('delivery') || q.includes('deliver')) {
+      return '🚚 Delivery charges are calculated based on distance. SIPGO shows the applicable delivery charge before you place the order.'
+    }
+
+    if (q.includes('pan') || q.includes('verification')) {
+      return '🪪 PAN verification is required for age-compliance checks. Please complete the verification when prompted.'
+    }
+
+    if (q.includes('age') || q.includes('21')) {
+      return '🔞 SIPGO is available only for customers who meet the applicable legal drinking-age requirement. Age verification is required.'
+    }
+
+    if (q.includes('cancel') || q.includes('refund')) {
+      return '↩️ For cancellation or refund help, please share your Order ID with SIPGO Support.'
+    }
+
+    if (q.includes('shop') || q.includes('store')) {
+      return '🏪 You can select an approved nearby shop from the SIPGO dashboard and view its available products.'
+    }
+
+    return '👋 Hi! I am SIPGO AI Support. I can help with orders, payment, delivery, shops, verification, cancellation and refunds. Please tell me what you need help with.'
+  }
+
+  const sendSupportMessage = () => {
+    const message = supportMessage.trim()
+    if (!message) return
+
+    const reply = getSupportReply(message)
+
+    setSupportMessages((current) => [
+      ...current,
+      { type: 'user', text: message },
+      { type: 'ai', text: reply }
+    ])
+
+    setSupportMessage('')
+  }
 
   const [savedLocations, setSavedLocations] = useState([])
   const [selectedSavedLocation, setSelectedSavedLocation] = useState(null)
@@ -1960,12 +2059,152 @@ function App() {
         <div className="profileSpacer"></div>
       </header>
 
-      {showProfile && (
-        <main>
-          <section className="welcome">
-            <div className="sectionTitle">
+      {showPanVerification && (
+        <main className="officialProfilePage">
+          <section className="officialProfileSection">
+            <div className="officialProfileTitle">
               <button
-                className="backButton"
+                className="officialProfileBack"
+                type="button"
+                onClick={() => setShowPanVerification(false)}
+              >
+                ←
+              </button>
+              <h2>PAN Verification</h2>
+            </div>
+
+            <div className="officialProfileCard profileEditCard">
+              <div className="profileEditFields">
+                <div style={{textAlign:'center',marginBottom:'18px'}}>
+                  <div style={{fontSize:'48px'}}>🪪</div>
+                  <h3 style={{margin:'8px 0 4px'}}>Verify your PAN</h3>
+                  <p style={{margin:0,opacity:.7,fontSize:'13px'}}>
+                    Enter your 10-character PAN number for verification.
+                  </p>
+                </div>
+
+                <label>
+                  <span>PAN Number</span>
+                  <input
+                    type="text"
+                    value={pan}
+                    maxLength={10}
+                    onChange={(e) => setPan(e.target.value.toUpperCase())}
+                    placeholder="ABCDE1234F"
+                    style={{textTransform:'uppercase'}}
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  className="officialEditSave"
+                  onClick={async () => {
+                    const cleanPan = String(pan || '').trim().toUpperCase()
+
+                    if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(cleanPan)) {
+                      alert('Enter a valid 10-character PAN')
+                      return
+                    }
+
+                    const { data, error } = await supabase.auth.updateUser({
+                      data: { pan: cleanPan }
+                    })
+
+                    if (error) {
+                      alert(error.message)
+                      return
+                    }
+
+                    if (data?.user) {
+                      setSession(current => current ? { ...current, user: data.user } : current)
+                    }
+
+                    setShowPanVerification(false)
+                    alert('PAN verification details saved successfully')
+                  }}
+                >
+                  ✓ Verify PAN
+                </button>
+              </div>
+            </div>
+          </section>
+        </main>
+      )}
+
+      {showProfileEdit && (
+        <main className="officialProfilePage">
+          <section className="officialProfileSection">
+            <div className="officialProfileTitle">
+              <button
+                className="officialProfileBack"
+                type="button"
+                onClick={() => setShowProfileEdit(false)}
+              >
+                ←
+              </button>
+              <h2>Edit Profile</h2>
+            </div>
+
+            <div className="officialProfileCard profileEditCard">
+              <div className="profileEditFields">
+                <label>
+                  <span>Full Name</span>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter your name"
+                  />
+                </label>
+
+                <label>
+                  <span>Mobile Number</span>
+                  <input
+                    type="tel"
+                    value={mobile}
+                    onChange={(e) => setMobile(e.target.value)}
+                    placeholder="Enter 10-digit mobile number"
+                  />
+                </label>
+
+                <label>
+                  <span>Date of Birth</span>
+                  <input
+                    type="date"
+                    value={dob}
+                    onChange={(e) => setDob(e.target.value)}
+                  />
+                </label>
+
+                <div className="profileEditActions">
+                  <button
+                    type="button"
+                    className="officialEditCancel"
+                    onClick={() => setShowProfileEdit(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="officialEditSave"
+                    onClick={handleProfileSave}
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      )}
+
+      {showProfile && !showSupport && (
+        <main className="officialProfilePage">
+          <section className="officialProfileSection">
+
+            <div className="officialProfileTitle">
+              <button
+                className="officialProfileBack"
                 onClick={() => setShowProfile(false)}
               >
                 ←
@@ -1973,27 +2212,277 @@ function App() {
               <h2>My Profile</h2>
             </div>
 
-            <div className="profileCard">
-              <div className="profileAvatar">👤</div>
-              <h3>{session?.user?.user_metadata?.name || 'SIPGO Customer'}</h3>
-
-              <div className="profileDetails">
-                <p><strong>📧 Email</strong><br />{session?.user?.email || '-'}</p>
-                <p><strong>📱 Mobile</strong><br />{session?.user?.user_metadata?.mobile || '-'}</p>
-                <p><strong>🎂 Date of Birth</strong><br />{session?.user?.user_metadata?.dob || '-'}</p>
-                <p><strong>🔞 Age Status</strong><br />21+ Verified</p>
-                <p><strong>🪪 PAN Status</strong><br />Verification Required</p>
+            <div className="officialProfileCard">
+              <div className="officialAvatarWrap">
+                <div className="officialAvatar">👤</div>
+                <div className="avatarEdit">✎</div>
               </div>
 
-              <button className="primaryButton" onClick={handleLogout}>
-                🚪 Logout
+              <div className="officialProfileMain">
+                <h3>SIPGO Customer</h3>
+                <p>✉️ {session?.user?.email || '-'}</p>
+                <p>📞 {session?.user?.user_metadata?.mobile || '-'}</p>
+              </div>
+
+              <button
+                className="officialEditButton"
+                type="button"
+                onClick={() => setShowProfileEdit(true)}
+              >
+                ✎ Edit
               </button>
             </div>
+
+            <div className="officialVerificationCard">
+              <h3>🛡️ Verification Status</h3>
+
+              <div className="verificationGrid">
+                <div className="verificationBox ageVerified">
+                  <span className="verificationIcon">🔞</span>
+                  <div>
+                    <small>Age Status</small>
+                    <strong>21+ Verified</strong>
+                  </div>
+                  <span className="verifiedTick">✓</span>
+                </div>
+
+                <button
+                  type="button"
+                  className="verificationBox panRequired"
+                  onClick={() => setShowPanVerification(true)}
+                >
+                  <span className="verificationIcon">🪪</span>
+                  <div>
+                    <small>PAN Status</small>
+                    <strong>Verification Required</strong>
+                  </div>
+                  <span className="verificationArrow">›</span>
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="officialMenuCard officialMenuButton"
+              onClick={() => {
+                setShowProfile(false)
+                setShowOrders(true)
+                loadMyOrders()
+              }}
+            >
+              <span className="menuIcon">📦</span>
+              <div>
+                <strong>My Orders</strong>
+                <small>View your order history and track orders</small>
+              </div>
+              <span className="menuArrow">›</span>
+            </button>
+
+            <button
+              type="button"
+              className="officialMenuCard officialMenuButton"
+              onClick={() => {
+                setShowProfile(false)
+                setShowLocationScreen(true)
+              }}
+            >
+              <span className="menuIcon">📍</span>
+              <div>
+                <strong>Saved Addresses</strong>
+                <small>Manage your delivery addresses</small>
+              </div>
+              <span className="menuArrow">›</span>
+            </button>
+
+            <button
+              type="button"
+              className="officialMenuCard officialMenuButton"
+              onClick={() => setShowSupport(true)}
+            >
+              <span className="menuIcon">🎧</span>
+              <div>
+                <strong>Help &amp; Support</strong>
+                <small>Get help, contact SIPGO AI Support</small>
+              </div>
+              <span className="menuArrow">›</span>
+            </button>
+
+            <button
+              type="button"
+              className="officialMenuCard officialMenuButton"
+              onClick={() => {
+                setShowProfile(false)
+                setShowTerms(true)
+              }}
+            >
+              <span className="menuIcon">📄</span>
+              <div>
+                <strong>Terms &amp; Privacy</strong>
+                <small>Terms of service and privacy policy</small>
+              </div>
+              <span className="menuArrow">›</span>
+            </button>
+
+            <button
+              className="officialLogoutButton"
+              onClick={handleLogout}
+            >
+              🚪 Logout
+            </button>
+
+            <div className="officialCompanyFooter">
+              <strong>ORVELLIS PRIVATE LIMITED</strong>
+              <span>Powered by SIPGO</span>
+              <span>Doddaballapura, Karnataka, India</span>
+            </div>
+
           </section>
         </main>
       )}
 
-      {showOrders ? (
+      {showSupport && (
+        <main className="officialSupportPage">
+          <section className="officialSupportSection">
+
+            <div className="officialSupportHeader">
+              <button
+                type="button"
+                className="officialSupportBack"
+                onClick={() => setShowSupport(false)}
+              >
+                ←
+              </button>
+              <div>
+                <strong>SIPGO AI Support</strong>
+                <small>● Online • Ready to help</small>
+              </div>
+            </div>
+
+            <div className="supportWelcome">
+              <div className="supportBotIcon">🤖</div>
+              <h2>How can we help?</h2>
+              <p>Ask SIPGO AI Support about your order, payment, delivery or verification.</p>
+            </div>
+
+            <div className="supportQuickActions">
+              {[
+                ['📦', 'My Order'],
+                ['💳', 'Payment'],
+                ['🚚', 'Delivery'],
+                ['🪪', 'Verification']
+              ].map(([icon, label]) => (
+                <button
+                  type="button"
+                  key={label}
+                  onClick={() => {
+                    setSupportMessage(label)
+                    setTimeout(() => {
+                      const reply = getSupportReply(label)
+                      setSupportMessages((current) => [
+                        ...current,
+                        { type: 'user', text: label },
+                        { type: 'ai', text: reply }
+                      ])
+                      setSupportMessage('')
+                    }, 0)
+                  }}
+                >
+                  <span>{icon}</span>
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <div className="supportChat">
+              {supportMessages.length === 0 ? (
+                <div className="supportEmpty">
+                  <span>💬</span>
+                  <p>Type your question below to start chatting with SIPGO AI Support.</p>
+                </div>
+              ) : (
+                supportMessages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={
+                      message.type === 'user'
+                        ? 'supportMessage userMessage'
+                        : 'supportMessage aiMessage'
+                    }
+                  >
+                    {message.text}
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="supportInputBar">
+              <input
+                type="text"
+                value={supportMessage}
+                placeholder="Ask SIPGO Support..."
+                onChange={(e) => setSupportMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') sendSupportMessage()
+                }}
+              />
+              <button type="button" onClick={sendSupportMessage}>
+                ➤
+              </button>
+            </div>
+
+          </section>
+        </main>
+      )}
+
+      {showTerms && (
+        <main className="officialTermsPage">
+          <section className="officialTermsSection">
+
+            <div className="officialTermsHeader">
+              <button
+                type="button"
+                className="officialTermsBack"
+                onClick={() => setShowTerms(false)}
+              >
+                ←
+              </button>
+              <h2>Terms &amp; Privacy</h2>
+            </div>
+
+            <div className="termsCard">
+              <h3>Terms of Service</h3>
+              <p>
+                By using SIPGO, you agree to use the service responsibly and
+                comply with all applicable laws and age requirements.
+              </p>
+            </div>
+
+            <div className="termsCard">
+              <h3>Privacy Policy</h3>
+              <p>
+                SIPGO uses your account, location and order information to
+                provide ordering, delivery and support services.
+              </p>
+            </div>
+
+            <div className="termsCard">
+              <h3>Age &amp; Compliance</h3>
+              <p>
+                SIPGO is intended only for customers who meet the applicable
+                legal drinking-age requirement. Verification may be required.
+              </p>
+            </div>
+
+            <div className="officialTermsFooter">
+              <strong>ORVELLIS PRIVATE LIMITED</strong>
+              <span>Powered by SIPGO</span>
+            </div>
+
+          </section>
+        </main>
+      )}
+
+      {showOrders && !showProfile ? (
         <main>
           <section className="welcome">
             <div className="sectionTitle">

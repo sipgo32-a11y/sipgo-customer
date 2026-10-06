@@ -1884,3 +1884,471 @@ main {
   transform-origin: right center;
   margin-left: -8px;
 }
+
+/* SIPGO Official Profile Page */
+.officialProfilePage {
+  background: #080d13 !important;
+  min-height: calc(100vh - 80px);
+  color: #fff !important;
+}
+
+.officialProfileSection {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 18px 16px 110px;
+}
+
+.officialProfileTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 8px 0 22px;
+}
+
+.officialProfileTitle h2 {
+  margin: 0 !important;
+  color: #fff !important;
+  font-size: 27px !important;
+  font-weight: 900 !important;
+}
+
+.officialProfileBack {
+  position: absolute;
+  left: 0;
+  border: 0 !important;
+  background: transparent !important;
+  color: #ffd400 !important;
+  font-size: 34px !important;
+  padding: 0 10px !important;
+}
+
+.officialProfileCard,
+.officialVerificationCard,
+.officialMenuCard {
+  background: #111820 !important;
+  border: 1px solid #25303a !important;
+  border-radius: 22px !important;
+  box-shadow: 0 5px 18px rgba(0,0,0,.22) !important;
+}
+
+.officialProfileCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px !important;
+  margin-bottom: 16px;
+}
+
+.officialAvatarWrap {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.officialAvatar {
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  background: #dcecff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+}
+
+.avatarEdit {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 31px;
+  height: 31px;
+  border-radius: 50%;
+  background: #ffd400;
+  color: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+}
+
+.officialProfileMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.officialProfileMain h3 {
+  margin: 0 0 8px !important;
+  color: #fff !important;
+  font-size: 22px !important;
+  font-weight: 900 !important;
+}
+
+.officialProfileMain p {
+  margin: 5px 0 !important;
+  color: #aeb8c4 !important;
+  font-size: 15px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.officialEditButton {
+  border: 2px solid #ffd400 !important;
+  border-radius: 14px !important;
+  background: transparent !important;
+  color: #ffd400 !important;
+  padding: 11px 15px !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+}
+
+.officialVerificationCard {
+  padding: 18px !important;
+  margin-bottom: 16px;
+}
+
+.officialVerificationCard > h3 {
+  margin: 0 0 15px !important;
+  color: #fff !important;
+  font-size: 19px !important;
+  font-weight: 900 !important;
+}
+
+.verificationGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.verificationBox {
+  min-height: 105px;
+  border-radius: 18px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+.ageVerified {
+  background: #063d20;
+  border: 1px solid #08783d;
+}
+
+.panRequired {
+  background: #302611;
+  border: 1px solid #735714;
+}
+
+.verificationIcon {
+  font-size: 28px;
+}
+
+.verificationBox div {
+  min-width: 0;
+  flex: 1;
+}
+
+.verificationBox small {
+  display: block;
+  color: #d5d9de;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+
+.verificationBox strong {
+  display: block;
+  color: #2df078 !important;
+  font-size: 17px !important;
+  font-weight: 900 !important;
+}
+
+.panRequired strong {
+  color: #ffd400 !important;
+}
+
+.verifiedTick {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #2df078;
+  color: #062515;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+}
+
+.verificationArrow,
+.menuArrow {
+  color: #dbe1e8;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.officialMenuCard {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 13px 18px !important;
+  margin-bottom: 10px;
+}
+
+.menuIcon {
+  width: 45px;
+  text-align: center;
+  font-size: 29px;
+  flex: 0 0 45px;
+}
+
+.officialMenuCard > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.officialMenuCard strong {
+  display: block;
+  color: #fff !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+}
+
+.officialMenuCard small {
+  display: block;
+  color: #aeb8c4 !important;
+  font-size: 13px !important;
+  margin-top: 3px;
+}
+
+.officialLogoutButton {
+  width: 100%;
+  min-height: 58px;
+  margin-top: 10px;
+  border: 0 !important;
+  border-radius: 17px !important;
+  background: #ff5424 !important;
+  color: #fff !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+}
+
+.officialCompanyFooter {
+  text-align: center;
+  padding: 22px 10px 8px;
+}
+
+.officialCompanyFooter strong {
+  display: block;
+  color: #ffd400 !important;
+  font-size: 17px !important;
+  font-weight: 900 !important;
+}
+
+.officialCompanyFooter span {
+  display: block;
+  color: #9ea8b4 !important;
+  font-size: 13px !important;
+  margin-top: 4px;
+}
+
+@media (max-width: 520px) {
+  .officialProfileCard {
+    padding: 16px !important;
+    gap: 11px;
+  }
+
+  .officialAvatar {
+    width: 68px;
+    height: 68px;
+    font-size: 40px;
+  }
+
+  .officialProfileMain h3 {
+    font-size: 18px !important;
+  }
+
+  .officialProfileMain p {
+    font-size: 12px !important;
+  }
+
+  .officialEditButton {
+    padding: 9px 10px !important;
+    font-size: 13px !important;
+  }
+
+  .verificationGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Extra compact SIPGO profile cards */
+.officialProfileSection {
+  padding: 8px 10px 85px !important;
+}
+
+.officialProfileTitle {
+  margin: 4px 0 12px !important;
+}
+
+.officialProfileTitle h2 {
+  font-size: 23px !important;
+}
+
+.officialProfileCard {
+  min-height: 82px !important;
+  padding: 9px 11px !important;
+  border-radius: 14px !important;
+  margin-bottom: 9px !important;
+}
+
+.officialAvatar {
+  width: 52px !important;
+  height: 52px !important;
+  font-size: 30px !important;
+}
+
+.avatarEdit {
+  width: 20px !important;
+  height: 20px !important;
+  font-size: 10px !important;
+}
+
+.officialProfileMain h3 {
+  font-size: 16px !important;
+  margin: 0 0 3px !important;
+}
+
+.officialProfileMain p {
+  font-size: 10px !important;
+  margin: 2px 0 !important;
+}
+
+.officialEditButton {
+  padding: 6px 8px !important;
+  font-size: 11px !important;
+  border-radius: 9px !important;
+}
+
+.officialVerificationCard {
+  padding: 10px !important;
+  border-radius: 14px !important;
+  margin-bottom: 9px !important;
+}
+
+.officialVerificationCard > h3 {
+  font-size: 15px !important;
+  margin: 0 0 7px !important;
+}
+
+.verificationGrid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 6px !important;
+}
+
+.verificationBox {
+  min-height: 58px !important;
+  padding: 6px !important;
+  border-radius: 10px !important;
+  gap: 5px !important;
+}
+
+.verificationIcon {
+  font-size: 17px !important;
+}
+
+.verificationBox small {
+  font-size: 9px !important;
+  margin-bottom: 1px !important;
+}
+
+.verificationBox strong {
+  font-size: 11px !important;
+  line-height: 1.15 !important;
+}
+
+.verifiedTick {
+  width: 18px !important;
+  height: 18px !important;
+  font-size: 10px !important;
+}
+
+.verificationArrow {
+  font-size: 22px !important;
+}
+
+.officialMenuCard {
+  min-height: 49px !important;
+  padding: 6px 10px !important;
+  margin-bottom: 6px !important;
+  border-radius: 12px !important;
+  gap: 8px !important;
+}
+
+.menuIcon {
+  width: 29px !important;
+  flex: 0 0 29px !important;
+  font-size: 20px !important;
+}
+
+.officialMenuCard strong {
+  font-size: 13px !important;
+}
+
+.officialMenuCard small {
+  font-size: 9px !important;
+  margin-top: 0 !important;
+}
+
+.menuArrow {
+  font-size: 23px !important;
+}
+
+.officialLogoutButton {
+  min-height: 45px !important;
+  margin-top: 6px !important;
+  border-radius: 12px !important;
+  font-size: 15px !important;
+}
+
+.officialCompanyFooter {
+  padding: 10px 4px 2px !important;
+}
+
+.officialCompanyFooter strong {
+  font-size: 13px !important;
+}
+
+.officialCompanyFooter span {
+  font-size: 9px !important;
+  margin-top: 1px !important;
+}
+
+/* Profile menu cards — equal full width */
+.officialProfileSection .officialMenuCard {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.officialProfileSection .officialMenuButton {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.officialProfileSection .menuIcon {
+  flex: 0 0 32px !important;
+}
+
+.officialProfileSection .officialMenuCard > div {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.officialProfileSection .menuArrow {
+  flex: 0 0 auto !important;
+}

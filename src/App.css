@@ -775,3 +775,336 @@ color: #17191c;
   color: #ffffff !important;
   background: #ff5a1f !important;
 }
+
+/* Reference-style home location selector */
+.locationButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #17191c;
+  text-align: left;
+  cursor: pointer;
+}
+
+.locationIcon {
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 400;
+}
+
+.locationText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.locationText strong {
+  font-size: 14px;
+  line-height: 1.1;
+  font-weight: 700;
+}
+
+.locationText small {
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #6d737b;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+/* ===== SIPGO CUSTOMER DASHBOARD - REFERENCE THEME ===== */
+
+.app {
+  background: #0b1015;
+  color: #ffffff;
+}
+
+.topbar {
+  background: #0b1015;
+  color: #ffffff;
+  border-bottom: 1px solid #1c252d;
+}
+
+.brand {
+  color: #ffffff;
+}
+
+.brand span {
+  color: #ffd400;
+}
+
+.locationButton {
+  color: #ffffff;
+}
+
+.locationText strong {
+  color: #ffffff;
+}
+
+.locationText small {
+  color: #aeb7c0;
+}
+
+main {
+  background: #0b1015;
+}
+
+.welcome p {
+  color: #ffd400;
+}
+
+.welcome h1 {
+  color: #ffffff;
+}
+
+.searchBox {
+  background: #ffffff;
+  border: 0;
+  box-shadow: none;
+}
+
+.searchBox input {
+  color: #17191c;
+}
+
+.sectionTitle h2,
+.categoriesTitle {
+  color: #ffffff;
+}
+
+.sectionTitle button {
+  color: #ffd400;
+}
+
+.category {
+  background: #151d24;
+  border: 1px solid #29343d;
+  color: #ffffff;
+}
+
+.category small {
+  color: #ffffff;
+}
+
+.merchantList {
+  background: transparent;
+}
+
+.merchant,
+.shopCard {
+  background: #ffffff;
+  border: 0;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .25);
+}
+
+.shopInfo h3 {
+  color: #11151a;
+}
+
+.shopInfo p {
+  color: #606870;
+}
+
+.shopArrow {
+  background: #ffd400;
+  color: #11151a;
+}
+
+.bottomNav {
+  background: #0b1015;
+  border-top: 1px solid #29343d;
+}
+
+.bottomNav button {
+  background: #0b1015;
+  color: #9ca6af;
+}
+
+.bottomNav button.active {
+  color: #ffd400;
+}
+
+.addShopButton {
+  background: #ffd400;
+  color: #11151a;
+}
+
+
+/* ===== SIPGO GPS LOCATION SCREEN ===== */
+
+.locationScreen {
+  min-height: 100vh;
+  background: #f5f6fb;
+  color: #252b3a;
+}
+
+.locationScreenHeader {
+  height: 72px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #f5f6fb;
+}
+
+.locationScreenHeader h1 {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 800;
+  color: #252b3a;
+}
+
+.locationBackButton {
+  width: 42px;
+  height: 42px;
+  background: transparent;
+  color: #252b3a;
+  font-size: 32px;
+  line-height: 1;
+}
+
+.locationScreenMain {
+  padding: 12px 20px 40px;
+  background: #f5f6fb;
+}
+
+.locationSearchBox {
+  height: 62px;
+  background: #ffffff;
+  border: 1px solid #e2e4ea;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+
+.locationSearchBox span {
+  font-size: 32px;
+  color: #e34d68;
+  line-height: 1;
+}
+
+.locationSearchBox input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #252b3a;
+  font-size: 17px;
+}
+
+.locationSearchBox input::placeholder {
+  color: #727988;
+  opacity: 1;
+}
+
+.useCurrentLocationButton {
+  width: 100%;
+  min-height: 86px;
+  margin-top: 18px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-align: left;
+  color: #252b3a;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+
+.useCurrentLocationButton .gpsIcon {
+  width: 38px;
+  font-size: 34px;
+  color: #e34d68;
+  text-align: center;
+}
+
+.useCurrentLocationButton span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.useCurrentLocationButton strong {
+  color: #e34d68;
+  font-size: 18px;
+}
+
+.useCurrentLocationButton small {
+  color: #737b89;
+  font-size: 13px;
+}
+
+.useCurrentLocationButton > b {
+  font-size: 30px;
+  color: #687080;
+}
+
+.savedAddressSection {
+  margin-top: 30px;
+}
+
+.savedAddressSection h2 {
+  margin: 0 0 16px;
+  font-size: 16px;
+  letter-spacing: 2px;
+  color: #687080;
+}
+
+.savedAddressCard {
+  width: 100%;
+  min-height: 110px;
+  margin-bottom: 14px;
+  padding: 18px;
+  border-radius: 20px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  text-align: left;
+  color: #252b3a;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+
+.savedAddressIcon {
+  width: 44px;
+  font-size: 34px;
+  color: #687080;
+  text-align: center;
+}
+
+.savedAddressCard > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.savedAddressCard strong {
+  font-size: 17px;
+}
+
+.savedAddressCard small {
+  color: #687080;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.savedAddressCard > b {
+  font-size: 28px;
+  color: #687080;
+}
+

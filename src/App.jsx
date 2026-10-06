@@ -33,7 +33,7 @@ function DeliveryMapPicker({ initialLocation, onSelect }) {
 
     const selectPoint = async (lat, lng, knownAddress = '') => {
       marker.setLatLng([lat, lng])
-      map.setView([lat, lng], 16)
+      map.setView([lat, lng], 16, { animate: false })
 
       let address = knownAddress || `${lat.toFixed(6)}, ${lng.toFixed(6)}`
 
@@ -78,6 +78,7 @@ function DeliveryMapPicker({ initialLocation, onSelect }) {
     setTimeout(() => map.invalidateSize(), 100)
 
     return () => {
+      map.stop()
       map.remove()
       mapInstanceRef.current = null
       markerRef.current = null
@@ -118,7 +119,7 @@ function DeliveryMapPicker({ initialLocation, onSelect }) {
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
 
     if (mapInstanceRef.current) {
-      mapInstanceRef.current.setView([lat, lng], 16)
+      mapInstanceRef.current.setView([lat, lng], 16, { animate: false })
 
       if (markerRef.current) {
         markerRef.current.setLatLng([lat, lng])
@@ -467,6 +468,7 @@ function App() {
   const [gpsDebug, setGpsDebug] = useState('')
   const [locationMessage, setLocationMessage] = useState('Getting your location...')
   const [currentPlaceName, setCurrentPlaceName] = useState('Detecting location...')
+  const [currentPlaceAddress, setCurrentPlaceAddress] = useState('Getting address...')
 
   const reverseGeocodeLocation = async (latitude, longitude) => {
     try {
@@ -486,7 +488,17 @@ function App() {
         data.principalSubdivision ||
         'Current location'
 
+      const addressParts = [
+        data.locality,
+        data.city && data.city !== data.locality ? data.city : '',
+        data.principalSubdivision,
+        data.countryName
+      ].filter(Boolean)
+
+      const address = addressParts.join(', ')
+
       setCurrentPlaceName(place)
+      setCurrentPlaceAddress(address || 'Current location')
     } catch (error) {
       console.error('Reverse geocoding error:', error)
       setCurrentPlaceName('Current location')
@@ -508,7 +520,15 @@ function App() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords
-        setCustomerLocation({ latitude, longitude })
+        const detectedLocation = {
+          latitude,
+          longitude
+        }
+
+        setCustomerLocation(detectedLocation)
+        setDeliveryLocation(detectedLocation)
+        setDeliveryLocationConfirmed(true)
+        setLocationConfirmRequired(false)
         setLocationMessage('Location detected ✅')
         reverseGeocodeLocation(latitude, longitude)
       },
@@ -696,6 +716,7 @@ function App() {
   const [savedLocations, setSavedLocations] = useState([])
   const [selectedSavedLocation, setSelectedSavedLocation] = useState(null)
   const [showLocationPicker, setShowLocationPicker] = useState(false)
+  const [showLocationScreen, setShowLocationScreen] = useState(false)
   const [locationLabel, setLocationLabel] = useState('Home')
   const [locationSearch, setLocationSearch] = useState('')
   const [mapLocation, setMapLocation] = useState(null)
@@ -1490,184 +1511,6 @@ function App() {
     )
   }
 
-  if (
-    !selectedShop &&
-    !showProfile &&
-    !showOrders &&
-    !showCart &&
-    !showCheckout &&
-    !deliveryLocationConfirmed
-  ) {
-    return (
-      <div className="app">
-        <header className="topbar">
-          <div>
-            <div className="brand">SIP<span>GO</span></div>
-            <div className="location">📍 Select delivery location</div>
-          </div>
-        </header>
-
-        <main>
-          <section className="welcome">
-            <p>Licensed liquor delivery</p>
-            <h1>Where should we<br />deliver?</h1>
-            <p style={{ marginTop: '8px' }}>
-              Select your delivery location first. We will show only approved SIPGO stores within 6 km.
-            </p>
-          </section>
-
-          <DeliveryMapPicker
-            initialLocation={customerLocation}
-            onSelect={(location) => {
-              setMapLocation(location)
-              setDeliveryAddress(location.address)
-              setDeliveryLocation({
-                latitude: location.latitude,
-                longitude: location.longitude
-              })
-              setSelectedSavedLocation({
-                id: null,
-                label: 'Other',
-                address: location.address,
-                latitude: location.latitude,
-                longitude: location.longitude
-              })
-              setLocationConfirmRequired(true)
-              setDeliveryLocationConfirmed(false)
-            }}
-          />
-
-          {savedLocations.length > 0 && (
-            <div className="savedLocationsList" style={{ marginTop: '14px' }}>
-              <strong>Saved locations</strong>
-
-              {savedLocations.map((location) => (
-                <button
-                  type="button"
-                  key={location.id}
-                  className="savedLocationItem"
-                  onClick={() => {
-                    setSelectedSavedLocation(location)
-                    setMapLocation(location)
-                    setDeliveryAddress(location.address)
-                    setDeliveryLocation({
-                      latitude: location.latitude,
-                      longitude: location.longitude
-                    })
-                    setLocationConfirmRequired(false)
-                    setDeliveryLocationConfirmed(true)
-                    setSelectedShop(null)
-                    setCart([])
-                    setCartShopId(null)
-                  }}
-                >
-                  <b>
-                    {location.label === 'Home'
-                      ? '🏠'
-                      : location.label === 'Office'
-                        ? '🏢'
-                        : '📍'}{' '}
-                    {location.label}
-                  </b>
-                  <span>{location.address}</span>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {mapLocation && (
-            <div style={{
-              marginTop: '12px',
-              padding: '12px',
-              borderRadius: '12px',
-              background: '#f5f5f5'
-            }}>
-              <strong>📍 Selected location</strong>
-              <div>{mapLocation.address}</div>
-              <small>
-                {mapLocation.latitude.toFixed(6)}, {mapLocation.longitude.toFixed(6)}
-              </small>
-            </div>
-          )}
-
-          {mapLocation && (
-            <button
-              type="button"
-              className="primaryButton"
-              style={{ width: '100%', marginTop: '12px' }}
-              onClick={() => {
-                setDeliveryLocationConfirmed(true)
-                setLocationConfirmRequired(false)
-                setSelectedShop(null)
-                setCart([])
-                setCartShopId(null)
-              }}
-            >
-              ✅ Confirm location & continue
-            </button>
-          )}
-
-          <div className="saveLocationSection" style={{ marginTop: '16px' }}>
-            <strong>Save selected location as</strong>
-
-            <div className="locationLabelButtons">
-              {['Home', 'Office', 'Other'].map((label) => (
-                <button
-                  type="button"
-                  key={label}
-                  className={
-                    locationLabel === label
-                      ? 'locationLabelButton active'
-                      : 'locationLabelButton'
-                  }
-                  onClick={() => setLocationLabel(label)}
-                >
-                  {label === 'Home'
-                    ? '🏠 Home'
-                    : label === 'Office'
-                      ? '🏢 Office'
-                      : '📍 Other'}
-                </button>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              className="saveLocationButton"
-              style={{ width: '100%', marginTop: '10px' }}
-              onClick={async () => {
-                if (!mapLocation) {
-                  setFormError('Select a location on the map first.')
-                  return
-                }
-
-                const saved = await saveDeliveryLocation(
-                  locationLabel,
-                  mapLocation.address,
-                  mapLocation.latitude,
-                  mapLocation.longitude
-                )
-
-                if (saved) {
-                  setDeliveryLocationConfirmed(true)
-                  setLocationConfirmRequired(false)
-                }
-              }}
-            >
-              💾 Save & continue
-            </button>
-          </div>
-
-          {formError && (
-            <div className="formError" style={{ marginTop: '12px' }}>
-              {formError}
-            </div>
-          )}
-        </main>
-      </div>
-    )
-  }
-
   if (selectedShop) {
     const shopSearch = search.toLowerCase().trim()
 
@@ -1941,12 +1784,129 @@ function App() {
     )
   }
 
+  if (showLocationScreen) {
+    return (
+      <div className="locationScreen">
+        <header className="locationScreenHeader">
+          <button
+            type="button"
+            className="locationBackButton"
+            onClick={() => setShowLocationScreen(false)}
+          >
+            ←
+          </button>
+          <h1>Select a location</h1>
+        </header>
+
+        <main className="locationScreenMain">
+          <DeliveryMapPicker
+            initialLocation={deliveryLocation || customerLocation}
+            onSelect={(location) => {
+              setMapLocation(location)
+              setDeliveryAddress(location.address)
+              setDeliveryLocation({
+                latitude: Number(location.latitude),
+                longitude: Number(location.longitude)
+              })
+              setSelectedSavedLocation(null)
+              setDeliveryLocationConfirmed(true)
+              setLocationConfirmRequired(false)
+
+              const firstPart =
+                String(location.address || '')
+                  .split(',')
+                  .map((part) => part.trim())
+                  .filter(Boolean)[0] || 'Selected location'
+
+              setCurrentPlaceName(firstPart)
+              setCurrentPlaceAddress(location.address || 'Selected location')
+              setSelectedShop(null)
+              setCart([])
+              setCartShopId(null)
+              setShowLocationScreen(false)
+            }}
+          />
+
+          <button
+            type="button"
+            className="useCurrentLocationButton"
+            onClick={() => {
+              getCustomerLocation()
+              setShowLocationScreen(false)
+            }}
+          >
+            <span className="gpsIcon">⌖</span>
+            <span>
+              <strong>Use current location</strong>
+              <small>{currentPlaceName}</small>
+            </span>
+            <b>›</b>
+          </button>
+
+          {savedLocations.length > 0 && (
+            <section className="savedAddressSection">
+              <h2>SAVED ADDRESSES</h2>
+
+              {savedLocations.map((location) => (
+                <button
+                  type="button"
+                  className="savedAddressCard"
+                  key={location.id}
+                  onClick={() => {
+                    const latitude = Number(location.latitude)
+                    const longitude = Number(location.longitude)
+
+                    setSelectedSavedLocation(location)
+                    setDeliveryAddress(location.address)
+                    setDeliveryLocation({ latitude, longitude })
+                    setDeliveryLocationConfirmed(true)
+                    setLocationConfirmRequired(false)
+
+                    setCurrentPlaceName(
+                      String(location.address || location.label)
+                        .split(',')
+                        .map((part) => part.trim())
+                        .filter(Boolean)[0] || location.label
+                    )
+
+                    setCurrentPlaceAddress(location.address)
+                    setSelectedShop(null)
+                    setCart([])
+                    setCartShopId(null)
+                    setShowLocationScreen(false)
+                  }}
+                >
+                  <span className="savedAddressIcon">⌂</span>
+                  <span>
+                    <strong>{location.label}</strong>
+                    <small>{location.address}</small>
+                  </span>
+                  <b>›</b>
+                </button>
+              ))}
+            </section>
+          )}
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="app">
       <header className="topbar">
         <div>
           <div className="brand">SIP<span>GO</span></div>
-          <div className="location">📍 {currentPlaceName}</div>
+          <button
+            type="button"
+            className="locationButton"
+            onClick={() => setShowLocationScreen(true)}
+          >
+            <span className="locationIcon">⌖</span>
+            <span className="locationText">
+              <strong>{currentPlaceName} ▾</strong>
+              <small>{currentPlaceAddress}</small>
+            </span>
+          </button>
         </div>
         <div className="profileSpacer"></div>
       </header>

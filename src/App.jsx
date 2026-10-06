@@ -276,6 +276,8 @@ function App() {
   const [mobile, setMobile] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [documentType, setDocumentType] = useState('PAN')
+  const [documentFile, setDocumentFile] = useState(null)
   const [confirmPassword, setConfirmPassword] = useState('')
   const [authLoading, setAuthLoading] = useState(false)
   const [authError, setAuthError] = useState('')
@@ -319,7 +321,8 @@ function App() {
     setAuthError('')
     setAuthMessage('')
 
-    const cleanMobile = mobile.replace(/\\D/g, '')
+    const cleanMobile = mobile.replace(/\D/g, '')
+    const cleanDocumentNumber = pan.replace(/\D/g, '')
     const cleanPan = pan.trim().toUpperCase()
 
     if (!name.trim()) {
@@ -342,8 +345,37 @@ function App() {
       return
     }
 
-    if (cleanPan.length !== 10) {
-      setAuthError('Enter a valid 10-character PAN')
+    if (documentType === 'PAN') {
+      if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(cleanPan)) {
+        setAuthError('Enter a valid 10-character PAN')
+        return
+      }
+    } else {
+      if (cleanDocumentNumber.length !== 12) {
+        setAuthError('Enter a valid 12-digit Aadhaar number')
+        return
+      }
+    }
+
+    if (!documentFile) {
+      setAuthError(`Upload your ${documentType === 'PAN' ? 'PAN' : 'Aadhaar'} document`)
+      return
+    }
+
+    if (documentFile.size > 5 * 1024 * 1024) {
+      setAuthError('Document file must be 5 MB or smaller')
+      return
+    }
+
+    const allowedTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'application/pdf'
+    ]
+
+    if (!allowedTypes.includes(documentFile.type)) {
+      setAuthError('Upload JPG, PNG, WEBP or PDF only')
       return
     }
 
@@ -377,28 +409,81 @@ function App() {
           name: name.trim(),
           dob,
           mobile: `+91${cleanMobile}`,
-          pan: cleanPan,
           account_status: 'PENDING',
-          age_verified: true,
+          age_verified: false,
           pan_verified: false
         }
       }
     })
 
-    setAuthLoading(false)
-
     if (error) {
+      setAuthLoading(false)
       setAuthError(error.message)
       return
     }
 
-    if (data.session) {
-      setIsLoggedIn(true)
-      setSession(data.session)
+    if (!data.user) {
+      setAuthLoading(false)
+      setAuthError('Account creation failed. Please try again.')
       return
     }
 
-    setAuthMessage('Account created. Please verify your email, then login.')
+    const userId = data.user.id
+    const extension = documentFile.name.includes('.')
+      ? documentFile.name.split('.').pop().toLowerCase()
+      : 'bin'
+
+    const documentPath = `${userId}/${documentType.toLowerCase()}-${Date.now()}.${extension}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('customer-documents')
+      .upload(documentPath, documentFile, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: documentFile.type
+      })
+
+    if (uploadError) {
+      console.error('Customer document upload failed:', uploadError)
+      setAuthLoading(false)
+      setAuthError('Document upload failed. Please try again.')
+      return
+    }
+
+    const { error: profileError } = await supabase
+      .from('customer_profiles')
+      .insert({
+        user_id: userId,
+        phone: `+91${cleanMobile}`,
+        age_verified: false,
+        pan_verified: false,
+        verification_status: 'PENDING',
+        date_of_birth: dob,
+        document_type: documentType,
+        document_path: documentPath,
+        document_uploaded_at: new Date().toISOString()
+      })
+
+    if (profileError) {
+      console.error('Customer profile creation failed:', profileError)
+      setAuthLoading(false)
+      setAuthError('Account verification setup failed. Please try again.')
+      return
+    }
+
+    setAuthLoading(false)
+
+    if (data.session) {
+      setSession(data.session)
+      setIsLoggedIn(false)
+      setAuthMode('login')
+      setAuthMessage('Account created. Please verify your email and wait for admin approval.')
+      setPassword('')
+      setConfirmPassword('')
+      return
+    }
+
+    setAuthMessage('Account created. Please verify your email, then wait for admin approval.')
     setAuthMode('login')
     setPassword('')
     setConfirmPassword('')
@@ -425,9 +510,9 @@ function App() {
       password
     })
 
-    setAuthLoading(false)
-
     if (error) {
+      setAuthLoading(false)
+
       if (error.message.toLowerCase().includes('email not confirmed')) {
         setAuthError('Please verify your email before login')
       } else {
@@ -436,15 +521,68 @@ function App() {
       return
     }
 
-    setSession(data.session)
+    const { data: profile, error: profileError } = await supabase
+      .from('customer_profiles')
+      .select('verification_status')
+      .eq('user_id', data.user.id)
+      .maybeSingle()
 
-    if (data.user?.user_metadata?.account_status === 'PENDING') {
-      setAuthMessage('Your SIPGO account is pending admin approval.')
-      setIsLoggedIn(false)
+    if (profileError) {
+      console.error('Customer profile check failed:', profileError)
+      await supabase.auth.signOut()
+      setAuthLoading(false)
+      setAuthError('Could not verify your account status. Please try again.')
       return
     }
 
+    if (!profile) {
+      await supabase.auth.signOut()
+      setAuthLoading(false)
+      setAuthError('Customer verification profile not found.')
+      return
+    }
+
+    const status = profile.verification_status
+
+    if (status === 'PENDING') {
+      await supabase.auth.signOut()
+      setAuthLoading(false)
+      setSession(null)
+      setIsLoggedIn(false)
+      setAuthMessage('Your SIPGO account is waiting for admin approval.')
+      return
+    }
+
+    if (status === 'REJECTED') {
+      await supabase.auth.signOut()
+      setAuthLoading(false)
+      setSession(null)
+      setIsLoggedIn(false)
+      setAuthError('Your SIPGO account was rejected by admin.')
+      return
+    }
+
+    if (status === 'BLOCKED') {
+      await supabase.auth.signOut()
+      setAuthLoading(false)
+      setSession(null)
+      setIsLoggedIn(false)
+      setAuthError('Your SIPGO account has been blocked.')
+      return
+    }
+
+    if (status !== 'VERIFIED') {
+      await supabase.auth.signOut()
+      setAuthLoading(false)
+      setSession(null)
+      setIsLoggedIn(false)
+      setAuthError('Your account is not approved yet.')
+      return
+    }
+
+    setSession(data.session)
     setIsLoggedIn(true)
+    setAuthLoading(false)
   }
 
   const handleLogout = async () => {
@@ -1648,9 +1786,7 @@ function App() {
             <div className="brand">SIP<span>GO</span></div>
             <div className="location">📍 {selectedShop.location}</div>
           </div>
-          <button className="cart" onClick={() => setShowCart(true)}>
-  🛒 {cart.length}
-</button>
+
         </header>
 
         <main>
@@ -1856,15 +1992,57 @@ function App() {
                   onChange={(e) => setDob(e.target.value)}
                 />
 
+                <label className="formLabel">Age Verification Document</label>
+                <select
+                  className="formInput"
+                  value={documentType}
+                  onChange={(e) => {
+                    setDocumentType(e.target.value)
+                    setDocumentFile(null)
+                    setPan('')
+                  }}
+                >
+                  <option value="PAN">PAN Card</option>
+                  <option value="AADHAAR">Aadhaar Card</option>
+                </select>
+
+                {documentType === 'PAN' ? (
+                  <input
+                    className="formInput"
+                    type="text"
+                    value={pan}
+                    onChange={(e) => setPan(e.target.value.toUpperCase())}
+                    placeholder="PAN Number"
+                    maxLength={10}
+                    autoCapitalize="characters"
+                  />
+                ) : (
+                  <input
+                    className="formInput"
+                    type="text"
+                    value={pan}
+                    onChange={(e) => setPan(e.target.value.replace(/\D/g, '').slice(0, 12))}
+                    placeholder="12-digit Aadhaar Number"
+                    maxLength={12}
+                    inputMode="numeric"
+                  />
+                )}
+
+                <label className="formLabel">
+                  Upload {documentType === 'PAN' ? 'PAN Card' : 'Aadhaar Card'}
+                </label>
                 <input
                   className="formInput"
-                  type="text"
-                  value={pan}
-                  onChange={(e) => setPan(e.target.value.toUpperCase())}
-                  placeholder="PAN Number"
-                  maxLength={10}
-                  autoCapitalize="characters"
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={(e) => setDocumentFile(e.target.files?.[0] || null)}
                 />
+
+                {documentFile && (
+                  <div className="formMessage">
+                    ✅ {documentFile.name}
+                  </div>
+                )}
 
                 <input
                   className="formInput"
@@ -2583,7 +2761,21 @@ function App() {
           <section className="featuredSection">
             <div className="featuredHeader">
               <h2>Featured Shops</h2>
-              <span>View All ›</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch('')
+                  setTimeout(() => {
+                    document.querySelector('.featuredSection')?.scrollIntoView({
+                      behavior: 'smooth',
+                      block: 'start'
+                    })
+                  }, 50)
+                }}
+                style={{background:'none', border:'none', cursor:'pointer', fontWeight:'700'}}
+              >
+                View All ›
+              </button>
             </div>
 
             <div className="featuredShops">
@@ -2655,7 +2847,7 @@ function App() {
 
       <nav className="bottomNav">
         <button className="active">⌂<span>Home</span></button>
-        <button>🔎<span>Search</span></button>
+        
         <button onClick={() => setShowCart(true)}>🛒<span>Cart</span></button>
         <button
           onClick={() => {

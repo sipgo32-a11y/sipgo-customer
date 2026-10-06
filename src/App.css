@@ -2352,3 +2352,86 @@ main {
 .officialProfileSection .menuArrow {
   flex: 0 0 auto !important;
 }
+
+/* ===== SIPGO FIXED BOTTOM NAVIGATION ===== */
+.bottom-navigation,
+.bottom-nav,
+nav.bottom-navigation,
+nav.bottom-nav {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 78px !important;
+  z-index: 9999 !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  align-items: center !important;
+  justify-items: center !important;
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom)) !important;
+  box-sizing: border-box !important;
+}
+
+.bottom-navigation > *,
+.bottom-nav > * {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+/* Cart page olage duplicate navigation idre hide */
+.cart-page .bottom-navigation,
+.cart-page .bottom-nav,
+.cart-container .bottom-navigation,
+.cart-container .bottom-nav {
+  display: none !important;
+}
+
+/* Content bottom nav jothe overlap agalla */
+main,
+.app-content,
+.page-content {
+  padding-bottom: 90px !important;
+}
+
+
+/* ===== DASHBOARD BOTTOM NAV - PERFECT EQUAL SPACE ===== */
+.bottomNav {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 82px !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 0 !important;
+  padding: 6px 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  z-index: 99999 !important;
+}
+
+.bottomNav > button {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 4px 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+}
+
+.bottomNav > button span {
+  display: block !important;
+  margin-top: 4px !important;
+}
+

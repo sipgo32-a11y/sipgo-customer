@@ -1426,6 +1426,23 @@ function App() {
                       <strong>₹{item.price * item.quantity}</strong>
                     </div>
 
+                    <div className="quantityControl cartQuantityControl">
+                      <button
+                        type="button"
+                        onClick={() => removeFromCart(item.id)}
+                      >
+                        −
+                      </button>
+
+                      <strong>{item.quantity}</strong>
+
+                      <button
+                        type="button"
+                        onClick={() => addToCart(item)}
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

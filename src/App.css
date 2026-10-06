@@ -1751,3 +1751,136 @@ main {
   font-weight: 900 !important;
 }
 
+
+/* SIPGO Official Checkout UI — visual only */
+.checkoutCard,
+.billCard {
+  background: #ffffff !important;
+  border: 1px solid #e8e8e8 !important;
+  border-radius: 18px !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,.06) !important;
+  padding: 18px !important;
+  margin-top: 16px !important;
+}
+
+.checkoutCard h2 {
+  color: #17191c !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+  margin-bottom: 14px !important;
+}
+
+.paymentOption {
+  min-height: 58px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 10px 12px !important;
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 14px !important;
+  margin: 8px 0 !important;
+  background: #fafafa !important;
+}
+
+.paymentOption:has(input:checked) {
+  border: 2px solid #ffd400 !important;
+  background: #fffbea !important;
+}
+
+.paymentOption > input {
+  accent-color: #ffd400 !important;
+}
+
+.tipOptions {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 8px !important;
+  margin-top: 14px !important;
+}
+
+.tipButton {
+  min-height: 44px !important;
+  border: 1px solid #dedede !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  color: #17191c !important;
+  font-weight: 800 !important;
+}
+
+.tipButton.active {
+  background: #ffd400 !important;
+  border-color: #ffd400 !important;
+  color: #17191c !important;
+}
+
+.billCard {
+  margin-top: 16px !important;
+}
+
+.billCard .grandTotal {
+  padding-top: 12px !important;
+  margin-top: 8px !important;
+}
+
+.checkoutButton {
+  width: 100% !important;
+  min-height: 56px !important;
+  margin-top: 18px !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  background: #ffd400 !important;
+  color: #17191c !important;
+  font-size: 17px !important;
+  font-weight: 900 !important;
+  box-shadow: 0 5px 14px rgba(0,0,0,.12) !important;
+}
+
+.checkoutButton:active {
+  transform: scale(.99);
+}
+
+.checkoutNote {
+  color: #777 !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  text-align: center !important;
+  margin: 12px 4px !important;
+}
+
+
+/* Compact cart product cards */
+.cartItems .cartItem {
+  padding: 10px 12px !important;
+  min-height: 82px !important;
+  border-radius: 14px !important;
+  gap: 10px !important;
+}
+
+.cartItems .cartItemIcon {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  border-radius: 10px !important;
+  font-size: 24px !important;
+}
+
+.cartItems .cartItemInfo h3 {
+  font-size: 15px !important;
+  margin: 0 0 2px !important;
+}
+
+.cartItems .cartItemInfo p {
+  font-size: 12px !important;
+  margin: 0 0 2px !important;
+}
+
+.cartItems .cartItemInfo strong {
+  font-size: 16px !important;
+  margin-top: 0 !important;
+}
+
+.cartItems .cartQuantityControl {
+  transform: scale(0.82);
+  transform-origin: right center;
+  margin-left: -8px;
+}

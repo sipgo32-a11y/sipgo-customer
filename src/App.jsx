@@ -1545,20 +1545,16 @@ function App() {
             />
           )}
 
-          <div className="shopHeader">
-            <div>
-              <h1>{selectedShop.name}</h1>
-              <p>
-                {isShopOpen(selectedShop.openingTime, selectedShop.closingTime)
-                  ? '🟢 OPEN'
-                  : '🔴 CLOSED'}
-              </p>
-              <p>
-                🕐 {selectedShop.openingTime || '--:--'} – {selectedShop.closingTime || '--:--'}
-              </p>
-              <p>⚡ Delivery in {selectedShop.time}</p>
-              <small>Shop information</small>
-            </div>
+          <div className="shopStatusOnly">
+            <span className={
+              isShopOpen(selectedShop.openingTime, selectedShop.closingTime)
+                ? "shopOpenBadge"
+                : "shopClosedBadge"
+            }>
+              {isShopOpen(selectedShop.openingTime, selectedShop.closingTime)
+                ? "OPEN"
+                : "CLOSED"}
+            </span>
           </div>
 
           <div className="shopProductSearch">
@@ -1573,7 +1569,31 @@ function App() {
             )}
           </div>
 
-          <h2 className="productTitle">Liquor available</h2>
+          <div className="productCategoryTabs">
+            {['All', 'Whisky', 'Beer', 'Rum', 'Vodka', 'Gin', 'Wine'].map(
+              (category) => (
+                <button
+                  type="button"
+                  key={category}
+                  className={
+                    !search && category === 'All'
+                      ? 'productCategoryTab active'
+                      : search.toLowerCase() === category.toLowerCase()
+                        ? 'productCategoryTab active'
+                        : 'productCategoryTab'
+                  }
+                  onClick={() => setSearch(category === 'All' ? '' : category)}
+                >
+                  {category}
+                </button>
+              )
+            )}
+          </div>
+
+          <div className="productListHeader">
+            <h2>Products</h2>
+            <span>{filteredProducts.length} items</span>
+          </div>
 
           {shopProducts.length === 0 ? (
             <div className="emptyProducts">
@@ -1584,25 +1604,40 @@ function App() {
               No matching liquor found in this shop.
             </div>
           ) : (
-            <div className="products">
+            <div className="products referenceProducts">
               {filteredProducts.map((product) => (
-                <div className="product" key={product.id}>
-                  <div className="productIcon">{product.icon}</div>
+                <div className="product referenceProduct" key={product.id}>
+                  <div className="productImageBox">
+                    {product.image || product.photo ? (
+                      <img
+                        src={product.image || product.photo}
+                        alt={product.name}
+                      />
+                    ) : (
+                      <div className="productIcon">
+                        {product.icon || '🍾'}
+                      </div>
+                    )}
+                  </div>
+
                   <div className="productInfo">
                     <h3>{product.name}</h3>
-                    <p>{product.size}</p>
+                    <p>{product.category || product.type || 'Liquor'} {product.size ? `• ${product.size}` : ''}</p>
                     <strong>₹{product.price}</strong>
                   </div>
+
                   {getQuantity(product.id) === 0 ? (
                     <button
-                      className="addButton"
+                      type="button"
+                      className="addButton referenceAddButton"
                       onClick={() => addToCart(product)}
                     >
-                      + Add
+                      +
                     </button>
                   ) : (
-                    <div className="quantityControl">
+                    <div className="quantityControl referenceQuantity">
                       <button
+                        type="button"
                         onClick={() => removeFromCart(product.id)}
                       >
                         −
@@ -1611,6 +1646,7 @@ function App() {
                       <strong>{getQuantity(product.id)}</strong>
 
                       <button
+                        type="button"
                         onClick={() => addToCart(product)}
                       >
                         +
@@ -1623,12 +1659,7 @@ function App() {
           )}
         </main>
 
-        {cart.length > 0 && (
-          <div className="cartBar">
-            <span>{cart.length} item{cart.length > 1 ? 's' : ''} added</span>
-            <button onClick={() => setShowCart(true)}>View Cart →</button>
-          </div>
-        )}
+
       </div>
     )
   }
@@ -2000,92 +2031,119 @@ function App() {
           </section>
         </main>
       ) : !showProfile ? (
-        <main>
-          <section className="welcome">
-          <p>Licensed liquor delivery</p>
-          <h1>Choose your<br />liquor store</h1>
-        </section>
+        <main className="customerDashboard">
+          <section className="dashboardHero">
+            <img
+              src="/banner/hero-banner.png"
+              alt="SIPGO favourite brands delivered to your home"
+            />
+          </section>
 
-        <div className="searchBox">
-          🔎
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search liquor shops or liquor..."
-          />
-        </div>
+          <div className="searchBox dashboardSearch">
+            🔎
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search drinks, brands, shops..."
+            />
+          </div>
 
-        <div className="sectionTitle">
-          <h2>Liquor Shops</h2>
-          <span>
-            {shops.length === 0
-              ? 'No service available in this area'
-              : `${shops.length} store${shops.length === 1 ? '' : 's'}`}
-          </span>
-        </div>
+          <section className="dashboardCategories">
+            {[
+              ['🥃', 'Whisky'],
+              ['🍺', 'Beer'],
+              ['🍹', 'Rum'],
+              ['🍾', 'Vodka'],
+              ['🍸', 'Gin'],
+              ['🍷', 'Wine'],
+              ['🥃', 'Brandy'],
+              ['🥤', 'Cold Drinks'],
+              ['💧', 'Water'],
+              ['🍹', 'Others']
+            ].map(([icon, name]) => (
+              <button
+                type="button"
+                className="dashboardCategory"
+                key={name}
+                onClick={() => setSearch(name)}
+              >
+                <span>{icon}</span>
+                <small>{name}</small>
+              </button>
+            ))}
+          </section>
 
-        <div className="shopList">
-          {shops
-            .filter((shop) => {
-              const q = search.toLowerCase().trim()
-              if (!q) return true
+          <section className="featuredSection">
+            <div className="featuredHeader">
+              <h2>Featured Shops</h2>
+              <span>View All ›</span>
+            </div>
 
-              return (
-                shop.name.toLowerCase().includes(q) ||
-                shop.location.toLowerCase().includes(q) ||
-                shop.products.some((product) =>
-                  product.name.toLowerCase().includes(q)
-                )
-              )
-            })
-            .map((shop) => (
-            <button
-              className="shopCard"
-              key={shop.id}
-              onClick={() => {
-                if (!isShopOpen(shop.openingTime, shop.closingTime)) {
-                  return
-                }
-                setSelectedShop(shop)
-              }}
-              disabled={!isShopOpen(shop.openingTime, shop.closingTime)}
-            >
-              <div className="shopPhoto">
-                {shop.photo ? (
-                  <img src={shop.photo} alt={shop.name} />
-                ) : (
-                  <div className="photoPlaceholder">📷</div>
-                )}
+            <div className="featuredShops">
+              {shops
+                .filter((shop) => {
+                  const q = search.toLowerCase().trim()
+                  if (!q) return true
+
+                  return (
+                    shop.name.toLowerCase().includes(q) ||
+                    shop.location.toLowerCase().includes(q) ||
+                    shop.products.some((product) =>
+                      product.name.toLowerCase().includes(q)
+                    )
+                  )
+                })
+                .map((shop) => (
+                  <button
+                    type="button"
+                    className="featuredShopCard"
+                    key={shop.id}
+                    onClick={() => {
+                      if (!isShopOpen(shop.openingTime, shop.closingTime)) {
+                        return
+                      }
+                      setSelectedShop(shop)
+                    }}
+                    disabled={!isShopOpen(shop.openingTime, shop.closingTime)}
+                  >
+                    <div className="featuredShopImage">
+                      {shop.photo ? (
+                        <img src={shop.photo} alt={shop.name} />
+                      ) : (
+                        <div className="featuredPhotoPlaceholder">🍾</div>
+                      )}
+                      <span className={shop.isOpen ? "openBadge" : "closedBadge"}>
+                        {shop.isOpen ? "Open" : "Closed"}
+                      </span>
+                    </div>
+
+                    <div className="featuredShopInfo">
+                      <h3>{shop.name}</h3>
+                      <p>⭐ 4.5 <span>({shop.products?.length || 0})</span></p>
+                      <small>
+                        📍 {shop.location} &nbsp; | &nbsp; ⚡ {shop.time}
+                      </small>
+                    </div>
+
+                    <span className="featuredArrow">›</span>
+                  </button>
+                ))}
+            </div>
+
+            {shops.length === 0 && (
+              <div className="dashboardEmpty">
+                No approved shops available within 6 km of your location.
               </div>
+            )}
+          </section>
 
-              <div className="shopInfo">
-                <h3>{shop.name}</h3>
-                <p>📍 {shop.location}</p>
-                <p>
-                  {shop.isOpen
-                    ? '🟢 OPEN'
-                    : '🔴 CLOSED'}
-                </p>
-                <p>
-                  🕐 {shop.openingTime || '--:--'} – {shop.closingTime || '--:--'}
-                </p>
-                <p>⚡ Delivery in {shop.time}</p>
-              </div>
-
-              <div className="shopArrow">›</div>
-            </button>
-          ))}
-        </div>
-
-        <div className="categoriesTitle">Browse by category</div>
-
-        <div className="categories">
-          <div>🍺<small>Beer</small></div>
-          <div>🥃<small>Whisky</small></div>
-          <div>🍷<small>Wine</small></div>
-          <div>🥂<small>Premium</small></div>
-        </div>
-      </main>
+          <section className="deliveryBanner">
+            <div>
+              <strong>GET YOUR FAVOURITE<br />DRINKS DELIVERED FAST</strong>
+              <span>🛵 &nbsp; 20–30 MINS</span>
+            </div>
+          </section>
+        </main>
       ) : null}
 
       <nav className="bottomNav">

@@ -1108,3 +1108,558 @@ main {
   color: #687080;
 }
 
+
+/* ===== SIPGO CUSTOMER DASHBOARD - REFERENCE STYLE ===== */
+
+.customerDashboard {
+  background: #070d12 !important;
+  color: #fff;
+  padding: 14px 14px 105px;
+  min-height: calc(100vh - 70px);
+}
+
+/* Reference order: search -> banner -> categories -> shops */
+.customerDashboard {
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboardSearch {
+  order: 1;
+  margin: 0 0 14px !important;
+  min-height: 56px;
+  border-radius: 17px !important;
+  background: #fff !important;
+  color: #111 !important;
+  box-shadow: none !important;
+}
+
+.dashboardSearch input {
+  color: #111 !important;
+  font-size: 16px;
+}
+
+.dashboardSearch input::placeholder {
+  color: #7b8188;
+}
+
+/* Hero banner */
+.dashboardHero {
+  order: 2;
+  position: relative;
+  min-height: 190px;
+  margin-bottom: 16px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid #263642;
+  background:
+    radial-gradient(circle at 82% 35%, rgba(255,195,0,.35), transparent 24%),
+    linear-gradient(120deg, #050708 0%, #15120b 55%, #33220b 100%);
+  display: flex;
+  align-items: center;
+  padding: 22px 18px;
+}
+
+.heroText {
+  position: relative;
+  z-index: 2;
+  max-width: 62%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.heroText span {
+  font-size: 18px;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-style: italic;
+}
+
+.heroText strong {
+  color: #ffd400;
+  font-size: 28px;
+  line-height: 1.02;
+  font-weight: 900;
+  font-style: italic;
+}
+
+.heroText small {
+  margin-top: 10px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.heroBottles {
+  position: absolute;
+  right: 5px;
+  bottom: 8px;
+  width: 42%;
+  height: 88%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+}
+
+.heroBottles span {
+  font-size: 55px;
+  filter: drop-shadow(0 7px 8px rgba(0,0,0,.7));
+}
+
+.heroBottles span:nth-child(2) {
+  font-size: 70px;
+}
+
+.heroBottles span:nth-child(3) {
+  font-size: 58px;
+}
+
+.heroBottles span:nth-child(4) {
+  font-size: 52px;
+}
+
+/* Categories */
+.dashboardCategories {
+  order: 3;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.dashboardCategory {
+  min-height: 104px;
+  padding: 8px 4px;
+  border-radius: 16px;
+  border: 1px solid #273743;
+  background: linear-gradient(180deg, #101a22, #0b131a);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.dashboardCategory span {
+  font-size: 39px;
+  line-height: 1;
+}
+
+.dashboardCategory small {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Featured shops */
+.featuredSection {
+  order: 4;
+  min-width: 0;
+}
+
+.featuredHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 3px 10px;
+}
+
+.featuredHeader h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 24px;
+}
+
+.featuredHeader span {
+  color: #ffd400;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.featuredShops {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 2px 2px 10px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.featuredShops::-webkit-scrollbar {
+  display: none;
+}
+
+.featuredShopCard {
+  position: relative;
+  flex: 0 0 245px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 17px;
+  background: #fff;
+  color: #111;
+  text-align: left;
+  box-shadow: 0 5px 18px rgba(0,0,0,.28);
+}
+
+.featuredShopImage {
+  position: relative;
+  height: 142px;
+  background: #222;
+  overflow: hidden;
+}
+
+.featuredShopImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.featuredPhotoPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  background: linear-gradient(135deg, #252525, #080808);
+}
+
+.openBadge,
+.closedBadge {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.openBadge {
+  background: #16b83f;
+}
+
+.closedBadge {
+  background: #e22b2b;
+}
+
+.featuredShopInfo {
+  padding: 9px 38px 12px 12px;
+}
+
+.featuredShopInfo h3 {
+  margin: 0 0 4px;
+  font-size: 17px;
+  color: #111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.featuredShopInfo p {
+  margin: 0 0 5px;
+  color: #f2c500;
+  font-weight: 700;
+}
+
+.featuredShopInfo p span {
+  color: #555;
+  font-weight: 500;
+}
+
+.featuredShopInfo small {
+  color: #555;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.featuredArrow {
+  position: absolute;
+  right: 10px;
+  bottom: 12px;
+  width: 37px;
+  height: 37px;
+  border-radius: 50%;
+  background: #ffd400;
+  color: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 27px;
+  font-weight: 900;
+}
+
+.dashboardEmpty {
+  padding: 25px 15px;
+  border-radius: 15px;
+  background: #111a21;
+  color: #aeb7bf;
+  text-align: center;
+}
+
+/* Yellow delivery strip */
+.deliveryBanner {
+  order: 5;
+  margin-top: 12px;
+  border-radius: 17px;
+  min-height: 86px;
+  padding: 12px 16px;
+  background: #ffd400;
+  color: #111;
+  display: flex;
+  align-items: center;
+}
+
+.deliveryBanner > div {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.deliveryBanner strong {
+  font-size: 15px;
+  line-height: 1.15;
+  font-style: italic;
+}
+
+.deliveryBanner span {
+  background: #111;
+  color: #ffd400;
+  border-radius: 20px;
+  padding: 9px 11px;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+/* Mobile sizing */
+@media (max-width: 420px) {
+  .customerDashboard {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .dashboardHero {
+    min-height: 180px;
+  }
+
+  .heroText strong {
+    font-size: 25px;
+  }
+
+  .heroBottles span {
+    font-size: 45px;
+  }
+
+  .heroBottles span:nth-child(2) {
+    font-size: 58px;
+  }
+
+  .dashboardCategory {
+    min-height: 96px;
+  }
+
+  .dashboardCategory span {
+    font-size: 34px;
+  }
+
+  .dashboardCategory small {
+    font-size: 11px;
+  }
+
+  .featuredShopCard {
+    flex-basis: 235px;
+  }
+}
+
+.dashboardHero {
+  padding: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  background: #000 !important;
+}
+
+.dashboardHero img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1536 / 634;
+  object-fit: cover;
+  border-radius: 17px;
+}
+
+
+/* Move SIPGO branding to the left like the reference */
+.topbar {
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+}
+
+.topbar > div:first-child {
+  align-items: flex-start !important;
+  text-align: left !important;
+}
+
+.brand {
+  text-align: left !important;
+  align-self: flex-start !important;
+  margin-left: 0 !important;
+}
+
+.locationButton {
+  justify-content: flex-start !important;
+  text-align: left !important;
+}
+
+
+/* ===== SHOP / PRODUCTS - REFERENCE STYLE ===== */
+
+.productCategoryTabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0 12px;
+  scrollbar-width: none;
+}
+
+.productCategoryTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.productCategoryTab {
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 18px;
+  padding: 9px 16px;
+  background: #f1f3f4;
+  color: #333;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.productCategoryTab.active {
+  background: #ffd400;
+  color: #111;
+}
+
+.productListHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 8px 0 10px;
+}
+
+.productListHeader h2 {
+  margin: 0;
+  font-size: 22px;
+  color: #fff;
+}
+
+.productListHeader span {
+  color: #8d969f;
+  font-size: 13px;
+}
+
+.referenceProducts {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.referenceProduct {
+  min-height: 88px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 4px;
+  background: #fff;
+  border-bottom: 1px solid #e7e7e7;
+}
+
+.productImageBox {
+  width: 58px;
+  height: 68px;
+  flex: 0 0 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.productImageBox img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.referenceProduct .productIcon {
+  font-size: 42px;
+  line-height: 1;
+}
+
+.referenceProduct .productInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.referenceProduct .productInfo h3 {
+  margin: 0 0 3px;
+  color: #111;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.referenceProduct .productInfo p {
+  margin: 0 0 4px;
+  color: #737373;
+  font-size: 12px;
+}
+
+.referenceProduct .productInfo strong {
+  color: #111;
+  font-size: 15px;
+}
+
+.referenceAddButton {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px;
+  padding: 0 !important;
+  border-radius: 10px !important;
+  background: #ffd400 !important;
+  color: #111 !important;
+  font-size: 25px !important;
+  font-weight: 800;
+}
+
+.referenceQuantity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.referenceQuantity button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #d9d9d9;
+  border-radius: 9px;
+  background: #fff;
+  color: #111;
+  font-size: 19px;
+}
+
+.referenceQuantity strong {
+  color: #111;
+  min-width: 18px;
+  text-align: center;
+}
+

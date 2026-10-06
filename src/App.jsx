@@ -690,6 +690,7 @@ function App() {
   const [deliveryAddress, setDeliveryAddress] = useState('')
   const [houseNumber, setHouseNumber] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('UPI')
+  const [deliveryTip, setDeliveryTip] = useState(0)
   const [showAddShop, setShowAddShop] = useState(false)
 
   const [savedLocations, setSavedLocations] = useState([])
@@ -776,6 +777,33 @@ function App() {
   const [shopPhoto, setShopPhoto] = useState('')
   const [formError, setFormError] = useState('')
 
+
+  const loadMyOrders = async () => {
+    setOrdersLoading(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setOrders([])
+        return
+      }
+
+      const { data, error } = await supabase
+        .from("sipgo_orders")
+        .select("*")
+        .eq("customer_id", user.id)
+        .order("created_at", { ascending: false })
+
+      if (error) {
+        console.error("Failed to load orders:", error)
+        setFormError(error.message)
+        return
+      }
+
+      setOrders(data || [])
+    } finally {
+      setOrdersLoading(false)
+    }
+  }
 
   const handlePlaceOrder = async () => {
     setFormError('')
@@ -865,7 +893,7 @@ function App() {
 
     const serviceCharge = Math.round(subtotal * 0.05)
     const handlingCharge = 26
-    const total = subtotal + deliveryFee + serviceCharge + handlingCharge
+    const total = subtotal + deliveryFee + serviceCharge + handlingCharge + deliveryTip
     const amountInPaise = Math.round(total * 100)
 
     setFormError('Opening secure Razorpay payment...')
@@ -939,6 +967,7 @@ function App() {
             subtotal,
             delivery_fee: deliveryFee,
             total_amount: total,
+            delivery_tip: deliveryTip,
             razorpay_order_id: response.razorpay_order_id,
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_signature: response.razorpay_signature
@@ -1001,7 +1030,7 @@ function App() {
 
     const serviceCharge = Math.round(subtotal * 0.05)
     const handlingCharge = 26
-    const total = subtotal + deliveryFee + serviceCharge + handlingCharge
+    const total = subtotal + deliveryFee + serviceCharge + handlingCharge + deliveryTip
 
     return (
       <div className="app">
@@ -1218,6 +1247,50 @@ function App() {
             </label>
           </section>
 
+          <section className="checkoutCard">
+            <h2>Support your Delivery Partner 💙</h2>
+            <p className="checkoutNote">
+              100% of your tip goes directly to your delivery partner.
+            </p>
+
+            <div className="tipOptions">
+              {[20, 50, 100].map((amount) => (
+                <button
+                  type="button"
+                  key={amount}
+                  className={deliveryTip === amount ? "tipButton active" : "tipButton"}
+                  onClick={() => setDeliveryTip(amount)}
+                >
+                  ₹{amount}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                className={deliveryTip !== 0 && ![20, 50, 100].includes(deliveryTip) ? "tipButton active" : "tipButton"}
+                onClick={() => {
+                  const value = window.prompt("Enter tip amount (minimum ₹20)")
+                  if (value === null) return
+                  const amount = Number(value)
+                  if (!Number.isFinite(amount) || amount < 20) {
+                    setFormError("Minimum tip is ₹20.")
+                    return
+                  }
+                  setFormError("")
+                  setDeliveryTip(Math.round(amount))
+                }}
+              >
+                Custom
+              </button>
+            </div>
+
+            {deliveryTip > 0 && (
+              <div className="tipSelected">
+                Tip: ₹{deliveryTip}
+              </div>
+            )}
+          </section>
+
           <section className="billCard">
             <div>
               <span>Subtotal</span>
@@ -1239,6 +1312,11 @@ function App() {
             </div>
 
             <div>
+            <div>
+              <span>Delivery Partner Tip</span>
+              <strong>₹{deliveryTip}</strong>
+            </div>
+
               <span>SIPGO service charge (5%)</span>
               <strong>₹{serviceCharge}</strong>
             </div>
@@ -1293,7 +1371,7 @@ function App() {
 
     const serviceCharge = Math.round(subtotal * 0.05)
     const handlingCharge = 26
-    const total = subtotal + deliveryFee + serviceCharge + handlingCharge
+    const total = subtotal + deliveryFee + serviceCharge + handlingCharge + deliveryTip
 
     return (
       <div className="app">
@@ -1359,6 +1437,11 @@ function App() {
                 </div>
 
                 <div>
+            <div>
+              <span>Delivery Partner Tip</span>
+              <strong>₹{deliveryTip}</strong>
+            </div>
+
                   <span>SIPGO service charge (5%)</span>
                   <strong>₹{serviceCharge}</strong>
                 </div>

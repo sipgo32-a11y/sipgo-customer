@@ -244,7 +244,8 @@ const defaultShops = [
   }
 ]
 
-function isShopOpen(openingTime, closingTime) {
+function isShopOpen(openingTime, closingTime, merchantIsOpen) {
+  if (typeof merchantIsOpen === 'boolean') return merchantIsOpen
   if (!openingTime || !closingTime) return false
 
   const now = new Date()
@@ -260,7 +261,6 @@ function isShopOpen(openingTime, closingTime) {
     return currentMinutes >= openMinutes && currentMinutes < closeMinutes
   }
 
-  // Supports shops that close after midnight
   return currentMinutes >= openMinutes || currentMinutes < closeMinutes
 }
 
@@ -1254,7 +1254,10 @@ function App() {
                 checked={paymentMethod === 'UPI'}
                 onChange={(e) => setPaymentMethod(e.target.value)}
               />
-              <span>UPI</span>
+              <span className="upiPaymentLabel">
+                <span className="upiSimpleIcon">₹</span>
+                <span>UPI</span>
+              </span>
             </label>
 
             <label className="paymentOption" style={{ opacity: 0.55 }}>
@@ -1313,33 +1316,29 @@ function App() {
           </section>
 
           <section className="billCard">
-            <div>
+            <div className="billRow">
               <span>Subtotal</span>
               <strong>₹{subtotal}</strong>
             </div>
 
-            <div>
-              <span>
-                Delivery ({selectedShop?.distanceKm != null
-                  ? selectedShop.distanceKm
-                  : distanceKm} km)
-              </span>
+            <div className="billRow">
+              <span>Delivery charge ({actualDistanceKm} km)</span>
               <strong>₹{deliveryFee}</strong>
             </div>
 
-            <div>
-              <span>Handling charge</span>
-              <strong>₹26</strong>
-            </div>
-
-            <div>
-            <div>
-              <span>Delivery Partner Tip</span>
-              <strong>₹{deliveryTip}</strong>
-            </div>
-
+            <div className="billRow">
               <span>SIPGO service charge (5%)</span>
               <strong>₹{serviceCharge}</strong>
+            </div>
+
+            <div className="billRow">
+              <span>Handling charge</span>
+              <strong>₹{handlingCharge}</strong>
+            </div>
+
+            <div className="billRow">
+              <span>Delivery Partner Tip</span>
+              <strong>₹{deliveryTip}</strong>
             </div>
 
             <hr />
@@ -1423,13 +1422,10 @@ function App() {
 
                     <div className="cartItemInfo">
                       <h3>{item.name}</h3>
-                      <p>{item.size}</p>
-                      <strong>₹{item.price} × {item.quantity}</strong>
+                      <p>{item.size} × {item.quantity}</p>
+                      <strong>₹{item.price * item.quantity}</strong>
                     </div>
 
-                    <div className="cartItemTotal">
-                      ₹{item.price * item.quantity}
-                    </div>
                   </div>
                 ))}
               </div>
@@ -1446,34 +1442,39 @@ function App() {
                 <small>📍 Distance calculated automatically from your location</small>
               </div>
 
-              <div className="billCard">
-                <div>
-                  <span>Subtotal</span>
-                  <strong>₹{subtotal}</strong>
-                </div>
+              <section className="billCard">
+            <div className="billRow">
+              <span>Subtotal</span>
+              <strong>₹{subtotal}</strong>
+            </div>
 
-                <div>
-                  <span>Delivery ({distanceKm} km)</span>
-                  <strong>₹{deliveryFee}</strong>
-                </div>
+            <div className="billRow">
+              <span>Delivery charge ({actualDistanceKm} km)</span>
+              <strong>₹{deliveryFee}</strong>
+            </div>
 
-                <div>
-            <div>
+            <div className="billRow">
+              <span>SIPGO service charge (5%)</span>
+              <strong>₹{serviceCharge}</strong>
+            </div>
+
+            <div className="billRow">
+              <span>Handling charge</span>
+              <strong>₹{handlingCharge}</strong>
+            </div>
+
+            <div className="billRow">
               <span>Delivery Partner Tip</span>
               <strong>₹{deliveryTip}</strong>
             </div>
 
-                  <span>SIPGO service charge (5%)</span>
-                  <strong>₹{serviceCharge}</strong>
-                </div>
+            <hr />
 
-                <hr />
-
-                <div className="grandTotal">
-                  <span>Total</span>
-                  <strong>₹{total}</strong>
-                </div>
-              </div>
+            <div className="grandTotal">
+              <span>Total</span>
+              <strong>₹{total}</strong>
+            </div>
+              </section>
 
               <button
                 className="checkoutButton"
@@ -1547,11 +1548,11 @@ function App() {
 
           <div className="shopStatusOnly">
             <span className={
-              isShopOpen(selectedShop.openingTime, selectedShop.closingTime)
+              isShopOpen(selectedShop.openingTime, selectedShop.closingTime, selectedShop.isOpen)
                 ? "shopOpenBadge"
                 : "shopClosedBadge"
             }>
-              {isShopOpen(selectedShop.openingTime, selectedShop.closingTime)
+              {isShopOpen(selectedShop.openingTime, selectedShop.closingTime, selectedShop.isOpen)
                 ? "OPEN"
                 : "CLOSED"}
             </span>

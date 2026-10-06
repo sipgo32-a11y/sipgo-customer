@@ -1663,3 +1663,91 @@ main {
   text-align: center;
 }
 
+
+.billCard .billRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 16px;
+  margin: 12px 0;
+}
+
+.billCard .billRow span {
+  flex: 1;
+  min-width: 0;
+  color: #666;
+  font-size: 16px;
+}
+
+.billCard .billRow strong {
+  flex: 0 0 auto;
+  color: #17191c !important;
+  font-size: 16px;
+  font-weight: 800;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.billCard .grandTotal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 16px;
+}
+
+.billCard .grandTotal strong {
+  color: #17191c !important;
+  font-size: 22px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.cartItemInfo h3 {
+  display: block !important;
+  color: #17191c !important;
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  margin: 0 0 6px !important;
+}
+
+.cartItemInfo p {
+  display: block !important;
+  color: #666 !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  margin: 0 0 6px !important;
+}
+
+.cartItemInfo strong {
+  display: block !important;
+  color: #17191c !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+  margin-top: 4px !important;
+}
+
+
+.upiPaymentLabel {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  color: #17191c !important;
+  font-weight: 800 !important;
+  font-size: 16px !important;
+}
+
+.upiSimpleIcon {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 50% !important;
+  background: #ffd400 !important;
+  color: #17191c !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+}
+
